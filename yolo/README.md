@@ -4,6 +4,11 @@ A custom **YOLOv8m** model that finds a freely swimming *Danionella* larva in ea
 
 Pre-trained models on Roboflow Universe did not handle these conditions, so I built a dedicated dataset and trained a custom model. Full details are in Chapter 2.3 of my PhD thesis ([Coraggioso, 2025](https://theses.hal.science/tel-05569582)).
 
+<p align="center">
+  <img src="../docs/figures/yolo_labeled_vs_predicted.png" width="85%" alt="Left: manually labelled frames; right: predictions of the trained model with confidence scores">
+</p>
+<p align="center"><sub>Left: manually labelled training frames. Right: predictions of the trained YOLOv8 model, with confidence scores (thesis, Fig. 2.5).</sub></p>
+
 ## Contents
 
 | File | Purpose |
@@ -44,6 +49,10 @@ The rules below are implemented in [`acquisition/utilities/yolo_postprocessing.p
 | 14–21 | 22 | 20 min |
 | 21–28 | 19 | 15 min |
 | 28+ | 31 | 9 min |
+
+<p align="center">
+  <img src="../docs/figures/tracking_run_duration.png" width="75%" alt="Run duration by age group and cumulative distribution">
+</p>
 
 On average the system tracks a fish continuously for about **15 minutes**, often more than 30 minutes for 14–28 dpf larvae. Older fish (28+ dpf) swim faster, which makes continuous detection harder and runs shorter.
 

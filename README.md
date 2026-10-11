@@ -5,14 +5,20 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17650136.svg)](https://doi.org/10.5281/zenodo.17650136)
 [![Paper](https://img.shields.io/badge/Science%20Advances-10.1126%2Fsciadv.aec6922-1f6feb)](https://doi.org/10.1126/sciadv.aec6922)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+[![Thesis](https://img.shields.io/badge/PhD%20thesis-HAL%20tel--05569582-6f42c1)](https://theses.hal.science/tel-05569582)
 [![tests](https://github.com/MonicaCoraggioso/fish-realtime-tracking/actions/workflows/tests.yml/badge.svg)](https://github.com/MonicaCoraggioso/fish-realtime-tracking/actions/workflows/tests.yml)
 
 I designed and built this software to run the behavioural experiments of
 [*A sensorimotor instability drives a locomotor transition during fish development*](https://doi.org/10.1126/sciadv.aec6922).
-It follows a single *Danionella* larva (a traslucent fish, few mm long) as it swims freely across a large arena. A camera running at 250 fps sits on a motorised CNC gantry that keeps the fish in view, and visual stimuli are presented in closed loop.
+It follows a single *Danionella* larva (a translucent fish, a few mm long) as it swims freely across a large arena. A camera running at 250 fps sits on a motorised CNC gantry that keeps the fish in view, and visual stimuli are presented in closed loop.
 
 The analysis of the resulting data is in the companion repository
-**[locomotor-transition-development](https://github.com/MonicaCoraggioso/locomotor-transition-development)**.
+**[locomotor-transition-development](https://github.com/MonicaCoraggioso/locomotor-transition-development)**. The full technical description of the set-up is in Chapter 2 of my [PhD thesis](https://theses.hal.science/tel-05569582).
+
+<p align="center">
+  <img src="docs/figures/setup.png" width="70%" alt="Tracking set-up: camera, IR illumination and beamsplitter on a motorised stage above the arena, with a monitor below displaying the visual background">
+</p>
+<p align="center"><sub>The camera and IR illumination ride on a motorised stage above the arena; a monitor under the tank displays the visual background. Inset: a tracked larva (scale bar 1 mm). From the thesis, Fig. 2.1.</sub></p>
 
 ---
 
@@ -38,10 +44,54 @@ The analysis of the resulting data is in the companion repository
 
 ## Highlights
 
-- **Real time at 250 fps**: tracking, motor control and stimulus rendering run in parallel threads, so the fish stays centred under the camera over the whole arena.
-- **Hybrid detection**: fast classical CV (thresholding, ellipse fit, tail segmentation) with a **custom-trained YOLOv8** fallback that recovers the fish when classical tracking fails (edges, dust, overlaps).
+- **Real-time, multi-threaded**: camera at 250 Hz, online tracking at 50 Hz and motor control at 18 Hz run in parallel threads without slowing each other down, so the fish stays centred under the camera over the whole arena.
+- **Hybrid detection**: fast classical CV (thresholding, ellipse fit) combined with a **custom-trained YOLOv8** detector that stays reliable where classical tracking fails (edges, dust, occlusions).
+- **Smooth closed-loop control**: a spring–dashpot following law moves the camera gantry without jerks or noise that could disturb the fish.
 - **Learned posture**: a SLEAP single-instance U-Net trained on 702 hand-labelled frames gives body keypoints, which are refined with spline fitting and phase-correlation registration.
 - **Reproducible configs**: post-processing parameters live in a documented YAML file (`postprocessing/config_default.yaml`).
+
+## System design and performance
+
+<p align="center">
+  <img src="docs/figures/software_architecture.png" width="75%" alt="Software architecture: camera, online tracking, motor, online plotting and video saving threads">
+</p>
+
+The acquisition software runs **five threads in parallel** (Python `threading`), which share data through locks (`acquire()` / `release()`) to avoid race conditions:
+
+| Thread | Role |
+|---|---|
+| Camera | Acquires frames and queues them for the other threads |
+| Video saving | Writes frames to disk in 1-minute chunks, without blocking acquisition |
+| Online tracking | Estimates the fish position and heading from each frame (classical image analysis + YOLOv8) |
+| Motor control | Turns the fish offset into G-code commands that keep the fish centred in the field of view |
+| Online plotting | Shows the live video and tracking result to the experimenter |
+
+**Measured timing** (median time per cycle, over 86 experiments; thesis Fig. 2.3):
+
+| Thread | Median cycle | Rate |
+|---|---|---|
+| Camera acquisition | 4 ms | ~250 Hz |
+| Online tracking (YOLO-based) | 20 ms | ~50 Hz |
+| Motor communication | 56 ms | ~18 Hz (limiting step of the loop) |
+
+<p align="center">
+  <img src="docs/figures/thread_timing.png" width="60%" alt="Distribution of cycle times for camera, tracking and motor threads">
+</p>
+
+**Detection.** Classical background subtraction and thresholding take about 2 ms per frame but confuse dust with the fish and fail along the arena walls. A YOLOv8m model trained on my own labelled frames handles these cases; the two estimates are combined with a confidence weight, and when several objects are detected the one closest to the previous position is kept. See [`yolo/`](yolo/) for training, evaluation and the decision rules.
+
+**Motor control.** The stage follows the fish as if connected to it by a virtual spring in series with a dashpot (thesis, Section 2.3.3). At each motor update the stage moves along the direction of the fish by
+
+$$\Delta x' = \frac{\Delta x}{r} V \, dt_{motor}, \qquad V_{t+1} = -\alpha r + (1-\beta) V_t,$$
+
+where $(\Delta x, \Delta y)$ is the fish offset from the centre of the field of view and $r$ its norm. The gain $\alpha = V_{MAX}/R_{MAX}$ depends on fish age ($V_{MAX}$ = 100 mm/s for young larvae up to 300 mm/s for older fish; $R_{MAX}$ is the radius of the field of view). The damping $\beta = 0.8\sqrt{\alpha \, dt_{motor}}$ was calibrated by projecting a dot moving at fish-like speeds and recording how the stage re-centred it, so that the response stays underdamped: rapid yet smooth corrections, without oscillatory instability. Further design choices:
+- the 35-command buffer of the Shapeoko controller is never left empty, so motion stays continuous and quiet (no stop-and-start accelerations);
+- if the fish leaves the field of view, a **recovery mode** makes larger steps at maximum speed along its last heading;
+- software limits registered at the arena edges keep the stage inside its range (crossing them would trigger a controller ALARM).
+
+The control law is implemented in [`acquisition/utilities/motor_control.py`](acquisition/utilities/motor_control.py) and tested in `tests/test_motor_control.py` (closed-loop simulations: re-centring a still fish and keeping a swimming fish in view).
+
+**Online tracking performance.** On average a fish is tracked continuously for about **15 minutes** before detection is lost, often more than 30 minutes for 14–28 dpf larvae (82 runs; thesis Fig. 2.6). See [`yolo/README.md`](yolo/README.md#evaluation) for details.
 
 ## Quick start
 
@@ -60,7 +110,7 @@ See each folder's README for details. The acquisition code needs the actual hard
 
 ## Tests
 
-Unit tests cover the hardware-independent parts: pose and kinematics cleaning (`data_processing/`), the post-processing configuration, and the calibration and watchdog helpers of the acquisition code. They run automatically on every push (GitHub Actions) and locally with:
+Unit tests cover the hardware-independent parts: the YOLO dataset and detection rules, the motor-following law (closed-loop simulations), pose and kinematics cleaning (`data_processing/`), the post-processing configuration, and the calibration and watchdog helpers of the acquisition code. Checks on the trained YOLO weights run locally once the weights are downloaded. They run automatically on every push (GitHub Actions) and locally with:
 
 ```bash
 pip install -r requirements-test.txt
@@ -81,9 +131,11 @@ Data are **not** stored in this repository. They are archived on Zenodo: [10.528
 
 ## Citation
 
-If you use this code, please cite the paper and the archive (see [`CITATION.cff`](CITATION.cff)):
+If you use this code, please cite the paper and the archive (see [`CITATION.cff`](CITATION.cff)). The set-up is described in detail in the thesis:
 
 > Coraggioso M., Demarchi L., Wong R., Dichio V., Chaumeton C., Panier T., Morvan-Dubois G., Goodhill G., Bormuth V., Debrégeas G. *A sensorimotor instability drives a locomotor transition during fish development.* *Science Advances* (2026). https://doi.org/10.1126/sciadv.aec6922
+>
+> Coraggioso M. *Multiscale locomotor dynamics in Danionella cerebrum.* PhD thesis, Sorbonne Université (2025). https://theses.hal.science/tel-05569582
 
 ## Author and credits
 
