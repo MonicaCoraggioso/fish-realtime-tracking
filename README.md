@@ -8,7 +8,7 @@
 
 I designed and built this software to run the behavioural experiments of
 [*A sensorimotor instability drives a locomotor transition during fish development*](https://doi.org/10.1126/sciadv.aec6922).
-It follows a single *Danionella* larva (a few mm long) as it swims freely across a large arena. A camera running at 250 fps sits on a motorised CNC gantry that keeps the fish in view, and visual stimuli are presented in closed loop.
+It follows a single *Danionella* larva (a traslucent fish, few mm long) as it swims freely across a large arena. A camera running at 250 fps sits on a motorised CNC gantry that keeps the fish in view, and visual stimuli are presented in closed loop.
 
 The analysis of the resulting data is in the companion repository
 **[locomotor-transition-development](https://github.com/MonicaCoraggioso/locomotor-transition-development)**.
@@ -78,7 +78,6 @@ If you use this code, please cite the paper and the archive (see [`CITATION.cff`
 ## Author and credits
 
 **Monica Coraggioso** ([ORCID](https://orcid.org/0009-0004-2091-3592)), Laboratoire Jean Perrin, Sorbonne Université.
-`data_processing/` was written by Vito Dichio. The ellipse fitting is inspired by R. Candelier's work, and the tail segmentation by [Stytra](https://github.com/portugueslab/stytra).
 
 ## License
 
