@@ -1,0 +1,18 @@
+name: sleap-pro
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9  # or 3.8 if you prefer
+  - numpy
+  - h5py
+  - opencv
+  - matplotlib
+  - jupyter
+  - pandas
+  - cython
+  - pip
+  - pip:
+      - sleap
+      - tensorflow-macos  # <-- for Apple Silicon
+      - tensorflow-metal   # <-- optional GPU acceleration on Mac

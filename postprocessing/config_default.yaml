@@ -1,0 +1,103 @@
+# Fish Tracking Experiment Configuration
+# Default configuration file with recommended values
+#
+# This file contains all configurable parameters for the fish tracking pipeline.
+# Copy this file and modify values for your specific experiment.
+#
+# Usage:
+#   from utilities.config import ExperimentConfig
+#   config = ExperimentConfig.from_yaml('config_default.yaml')
+
+experiment_name: default
+
+# Image Preprocessing Configuration
+preprocessing:
+  # Gaussian blur standard deviation for noise reduction (pixels)
+  # Higher values = more smoothing but less detail
+  # Typical range: 0.5 - 2.0
+  gaussian_sigma: 1.0
+
+  # Downsampling factor for faster processing
+  # Images will be scaled down by this factor
+  # Typical range: 1 (no downsampling) - 4
+  downsampling: 2
+
+  # Binary threshold value (0-255)
+  # Pixels above this value become white (foreground)
+  # Adjust based on lighting and contrast
+  th_img: 100
+
+  # Minimum contour area (pixels) for noise removal
+  # Contours smaller than this are discarded as noise
+  noise_removal_area_min: 10.0
+
+  # Maximum contour area (pixels) for noise removal
+  # Contours larger than this may be artifacts or multiple fish
+  noise_removal_area_max: 5000.0
+
+# Fish Body Tracking Configuration
+tracking:
+  # Number of segments to divide fish body/tail
+  # More segments = better resolution but slower tracking
+  # Typical range: 10-30 depending on fish size
+  n_segments: 20
+
+  # Radius of circular search window for next segment (pixels)
+  # Should be ~half the fish width
+  # Larger values are more robust but slower
+  window_radius: 5.0
+
+  # Length of each segment (pixels)
+  # If null, automatically computed as fish_length / n_segments
+  # Set explicitly for fixed-length segments
+  segment_length: null
+
+  # Scalar product threshold for direction consistency (0-1)
+  # Minimum dot product between consecutive segment directions
+  # Higher values (e.g., 0.7) = straighter paths, may fail on sharp bends
+  # Lower values (e.g., 0.3) = more flexible, may be noisy
+  # Recommended: 0.4-0.6 for general use
+  scalar_product_threshold: 0.5
+
+# Head Image Registration Configuration
+registration:
+  # Crop distance around head region (pixels)
+  # Defines size of extracted head region
+  dcrop: 15
+
+  # Error threshold for triggering rotation correction
+  # If registration error > this value, rotation is applied
+  # Typical range: 0.1 - 0.3
+  error_threshold: 0.2
+
+  # Upsampling factor for initial phase cross-correlation
+  # Higher = more accurate but slower
+  # Typical range: 10 - 100
+  upsample_factor_initial: 100
+
+  # Upsampling factor after rotation correction
+  # Can be lower than initial since rotation improves alignment
+  upsample_factor_refined: 50
+
+  # Angular search range in degrees (+/-)
+  # Search from -angle_search_range to +angle_search_range
+  angle_search_range: 95.0
+
+  # Step size for coarse angular search (degrees)
+  # Smaller steps = more accurate but slower
+  angle_search_step: 1.0
+
+# SLEAP Pose Estimation Integration
+sleap:
+  # Minimum confidence threshold for pose detection (0-1)
+  # Poses with scores below this are rejected
+  # Higher = more conservative, fewer false positives
+  th_score: 0.7
+
+  # Minimum confidence for individual keypoints (0-1)
+  # Points with scores below this are marked as missing
+  th_score_points: 0.5
+
+  # Maximum distance for point alignment (pixels)
+  # Points within this distance are considered aligned
+  alignment_tolerance: 1.5

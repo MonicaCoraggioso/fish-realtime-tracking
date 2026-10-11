@@ -1,0 +1,12 @@
+changer x en -x, changer direction de homing en x ?
+$3=4
+$23=3
+limites logicielles : activer ($20=!) et regler ($130=400)
+
+g90 # absolute mode
+g92 x0 y0 # here is the new zero for coordinates
+
+if:
+ALARM:2
+[MSG:Reset to continue]
+-> Ctrl-X

@@ -1,0 +1,25 @@
+# YOLOv8 and object detection
+ultralytics>=8.0.0
+torch
+torchvision
+
+# Image and video I/O
+opencv-python>=4.5.0
+Pillow
+imageio
+scikit-image
+
+# Dataset (optional; for downloading from Roboflow)
+roboflow
+
+# Scientific computing and plotting
+numpy
+scipy
+matplotlib
+
+# Progress and widgets (for Jupyter)
+tqdm
+ipywidgets
+
+# Optional: numba for accelerated helpers (used in dataset-creation notebook)
+numba

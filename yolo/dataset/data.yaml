@@ -1,0 +1,15 @@
+names:
+- fish
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: dc_freely
+  url: https://universe.roboflow.com/ljpdanionella-behaviour/dc_freely/dataset/4
+  version: 4
+  workspace: ljpdanionella-behaviour
+# Paths relative to this file's directory (dc_freely-4/)
+test: test/images
+train: train/images
+val: valid/images
+
+
