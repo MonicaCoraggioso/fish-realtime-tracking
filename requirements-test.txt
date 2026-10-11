@@ -3,4 +3,5 @@ numpy
 scipy
 pandas
 pyyaml
+pillow
 pytest
