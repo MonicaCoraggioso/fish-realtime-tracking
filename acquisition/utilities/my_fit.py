@@ -1,5 +1,5 @@
 """
-    Serial port comunication with Carbide 3D Shapeoko 4 using G-code.
+    Line-fitting helpers used for the pixel-to-mm and camera-to-motor calibration.
     
     Author: Monica Coraggioso
 """

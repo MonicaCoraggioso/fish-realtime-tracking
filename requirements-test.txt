@@ -1,0 +1,6 @@
+# Lightweight dependencies to run the unit tests (no GPU, camera or SLEAP needed)
+numpy
+scipy
+pandas
+pyyaml
+pytest

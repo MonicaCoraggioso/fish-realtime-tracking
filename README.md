@@ -5,6 +5,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17650136.svg)](https://doi.org/10.5281/zenodo.17650136)
 [![Paper](https://img.shields.io/badge/Science%20Advances-10.1126%2Fsciadv.aec6922-1f6feb)](https://doi.org/10.1126/sciadv.aec6922)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+[![tests](https://github.com/MonicaCoraggioso/fish-realtime-tracking/actions/workflows/tests.yml/badge.svg)](https://github.com/MonicaCoraggioso/fish-realtime-tracking/actions/workflows/tests.yml)
 
 I designed and built this software to run the behavioural experiments of
 [*A sensorimotor instability drives a locomotor transition during fish development*](https://doi.org/10.1126/sciadv.aec6922).
@@ -56,6 +57,15 @@ cd yolo && jupyter notebook train_yolov8.ipynb
 ```
 
 See each folder's README for details. The acquisition code needs the actual hardware (FLIR camera + Spinnaker SDK, Shapeoko CNC, projector).
+
+## Tests
+
+Unit tests cover the hardware-independent parts: pose and kinematics cleaning (`data_processing/`), the post-processing configuration, and the calibration and watchdog helpers of the acquisition code. They run automatically on every push (GitHub Actions) and locally with:
+
+```bash
+pip install -r requirements-test.txt
+pytest
+```
 
 ## Data and model weights
 
