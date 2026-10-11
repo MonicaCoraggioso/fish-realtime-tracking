@@ -77,7 +77,7 @@ If you use this code, please cite the paper and the archive (see [`CITATION.cff`
 
 ## Author and credits
 
-**Monica Coraggioso** ([ORCID](https://orcid.org/0009-0004-2091-3592)), Laboratoire Jean Perrin, Sorbonne Université.
+**Monica Coraggioso** ([ORCID](https://orcid.org/0009-0004-2091-3592)), Laboratoire Jean Perrin, Sorbonne Université. Data quality check and dataset standardization by **Vito Dichio**.
 
 ## License
 
