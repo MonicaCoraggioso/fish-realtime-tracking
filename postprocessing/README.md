@@ -59,3 +59,7 @@ config = ExperimentConfig.from_yaml('../config_default.yaml')
 ## Model weights
 
 The trained SLEAP weights (`best_model.h5`, 24 MB) are attached to the GitHub Release and archived on [Zenodo](https://doi.org/10.5281/zenodo.17650136) (`Tracking_camera.zip` → `postprocessing/SLEAPforDc/`). Put them in `sleap_model/` next to `training_config.json`.
+
+## Author
+
+**Monica Coraggioso**
