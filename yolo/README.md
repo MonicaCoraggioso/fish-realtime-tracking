@@ -21,7 +21,7 @@ Pre-trained models on Roboflow Universe did not handle these conditions, so I bu
 
 ## Training data and settings
 
-The final training procedure (thesis, Ch. 2.3) uses **797 manually labelled frames** (702 train / 63 validation / 32 test), curated to cover the hard cases met in experiments: fish near the tank edges, varied postures, dust and imaging noise, fish off-centre in the region of interest, and fish at different developmental stages.
+The final training procedure uses **797 manually labelled frames** (702 train / 63 validation / 32 test), curated to cover the hard cases met in experiments: fish near the tank edges, varied postures, dust and imaging noise, fish off-centre in the region of interest, and fish at different developmental stages.
 
 - **Preprocessing:** frames binarised and cropped to **128×128 px**, which is key to fast inference.
 - **Augmentation:** horizontal and vertical flips, 90° rotations, small rotations (±2°), Gaussian blur (up to 1.4 px), random noise (up to 0.1% of pixels).
@@ -41,20 +41,7 @@ The rules below are implemented in [`acquisition/utilities/yolo_postprocessing.p
 
 ## Evaluation
 
-**Online tracking performance** (thesis, Fig. 2.6). Run duration is the uninterrupted time a fish is tracked before detection is lost:
-
-| Age (dpf) | Runs (N) | Mean run duration |
-|---|---|---|
-| 7–14 | 10 | 13 min |
-| 14–21 | 22 | 20 min |
-| 21–28 | 19 | 15 min |
-| 28+ | 31 | 9 min |
-
-<p align="center">
-  <img src="../docs/figures/tracking_run_duration.png" width="75%" alt="Run duration by age group and cumulative distribution">
-</p>
-
-On average the system tracks a fish continuously for about **15 minutes**, often more than 30 minutes for 14–28 dpf larvae. Older fish (28+ dpf) swim faster, which makes continuous detection harder and runs shorter.
+**Online tracking performance**. Run duration is the uninterrupted time a fish is tracked before detection is lost. On average the system tracks a fish continuously for about **15 minutes**, often more than 30 minutes for 14–28 dpf larvae. Older fish (28+ dpf) swim faster, which makes continuous detection harder and runs shorter.
 
 **Inference speed:** about 11–13 ms per frame for YOLOv8m at 128×128 on the acquisition PC's GPU, compared with about 2 ms for the classical method. The 250 fps camera and the ≥50 Hz tracking rate needed to follow the fish are why both methods are combined.
 
@@ -94,3 +81,7 @@ The dataset is CC BY 4.0 (see `dataset/README.roboflow.txt`). The code is MIT.
 - M. Coraggioso, *Multiscale locomotor dynamics in Danionella cerebrum*, PhD thesis, Sorbonne Université (2025), Chapter 2.3. https://theses.hal.science/tel-05569582
 - [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics)
 - [Roboflow: How to train YOLOv8 on a custom dataset](https://blog.roboflow.com/how-to-train-yolov8-on-a-custom-dataset)
+
+## Author
+
+**Monica Coraggioso**
