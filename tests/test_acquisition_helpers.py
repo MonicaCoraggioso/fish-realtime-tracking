@@ -4,8 +4,8 @@ import pytest
 
 from conftest import load_module
 
-_fit = load_module("acquisition/utilities/my_fit.py", "acq_my_fit")
-_sanity = load_module("acquisition/utilities/sanity_test.py", "acq_sanity_test")
+_fit = load_module("2_acquisition/utilities/my_fit.py", "acq_my_fit")
+_sanity = load_module("2_acquisition/utilities/sanity_test.py", "acq_sanity_test")
 fit_line, build_line, build_line_inv = _fit.fit_line, _fit.build_line, _fit.build_line_inv
 calculate_distance, check_motor_movement, send_sms = (
     _sanity.calculate_distance, _sanity.check_motor_movement, _sanity.send_sms)

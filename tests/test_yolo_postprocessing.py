@@ -4,7 +4,7 @@ import pytest
 
 from conftest import load_module
 
-yp = load_module("acquisition/utilities/yolo_postprocessing.py", "acq_yolo_postprocessing")
+yp = load_module("2_acquisition/utilities/yolo_postprocessing.py", "acq_yolo_postprocessing")
 
 
 def test_box_centers_are_rescaled_to_camera_pixels():

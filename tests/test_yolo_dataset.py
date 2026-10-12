@@ -1,4 +1,4 @@
-"""Integrity checks on the bundled YOLO training dataset (yolo/dataset/)."""
+"""Integrity checks on the bundled YOLO training dataset (1_yolo_detector/dataset/)."""
 import re
 from pathlib import Path
 
@@ -6,7 +6,7 @@ import pytest
 import yaml
 from PIL import Image
 
-DATASET = Path(__file__).resolve().parents[1] / "yolo" / "dataset"
+DATASET = Path(__file__).resolve().parents[1] / "1_yolo_detector" / "dataset"
 SPLITS = {"train": 106, "valid": 11, "test": 5}
 
 

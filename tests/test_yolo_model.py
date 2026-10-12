@@ -2,7 +2,7 @@
 
 Skipped automatically when `ultralytics` is not installed or the weights are not
 present (e.g. on GitHub Actions). To run them locally, download
-`yolo8m_live_tracking.pt` from the GitHub Release into `yolo/` and run:
+`yolo8m_live_tracking.pt` from the GitHub Release into `1_yolo_detector/` and run:
 
     pip install ultralytics
     pytest tests/test_yolo_model.py -v
@@ -13,8 +13,8 @@ import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WEIGHTS = ROOT / "yolo" / "yolo8m_live_tracking.pt"
-TEST_SET = ROOT / "yolo" / "dataset" / "test"
+WEIGHTS = ROOT / "1_yolo_detector" / "yolo8m_live_tracking.pt"
+TEST_SET = ROOT / "1_yolo_detector" / "dataset" / "test"
 
 ultralytics = pytest.importorskip("ultralytics")
 pytestmark = pytest.mark.skipif(not WEIGHTS.exists(), reason="trained weights not downloaded")

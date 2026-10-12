@@ -5,7 +5,7 @@ import pytest
 
 from utilities.config import ExperimentConfig
 
-DEFAULT_YAML = Path(__file__).resolve().parents[1] / "postprocessing" / "config_default.yaml"
+DEFAULT_YAML = Path(__file__).resolve().parents[1] / "3_pose_estimation" / "config_default.yaml"
 
 
 def test_defaults_are_valid():

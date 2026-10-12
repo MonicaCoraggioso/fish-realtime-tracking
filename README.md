@@ -26,21 +26,22 @@ The analysis of the resulting data is in the repository
 
 ```
  ┌────────────────────────┐   ┌────────────────────────┐   ┌────────────────────────┐   ┌────────────────────────┐
- │ acquisition/           │   │ yolo/                  │   │ postprocessing/        │   │ data_processing/       │
- │ 250 fps camera capture │──▶│ custom YOLOv8 detector │   │ SLEAP keypoints +      │──▶│ quality filters,       │
- │ real-time tracking     │◀──│ (128×128 crops, GPU)   │   │ spline fit + image     │   │ spline regularisation, │
- │ CNC gantry follows fish│   └────────────────────────┘   │ registration → lab     │   │ merged INFO/KINE/POSE  │
- │ projected stimuli      │──────── raw videos ──────────▶ │ frame trajectories     │   │ HDF5 for analysis      │
- └────────────────────────┘                                └────────────────────────┘   └────────────────────────┘
+ │ 1_yolo_detector/       │   │ 2_acquisition/         │   │ 3_pose_estimation/     │   │ 4_dataset_building/    │
+ │ labelled frames →      │   │ 250 Hz camera capture  │   │ SLEAP keypoints +      │   │ quality filters,       │
+ │ custom YOLOv8 detector │──▶│ real-time tracking     │──▶│ spline fit + image     │──▶│ spline regularisation, │
+ │ (128×128 input, GPU)   │   │ gantry follows fish    │   │ registration → lab     │   │ merged INFO/KINE/POSE  │
+ │                        │   │ closed-loop stimuli    │   │ frame trajectories     │   │ HDF5 for analysis      │
+ └────────────────────────┘   └────────────────────────┘   └────────────────────────┘   └────────────────────────┘
+        before experiments           during experiment             after experiment            input to analysis
 ```
 
 | Module | What it does | Key tech |
 |---|---|---|
-| [`acquisition/`](acquisition/) | Real-time loop: frame grab → background subtraction → detection → head direction → motor command → stimulus update. Multi-threaded capture, tracking and motor control. | OpenCV, PyTorch/Ultralytics, PySerial (G-code), PsychoPy, FLIR Spinnaker |
-| [`yolo/`](yolo/) | Building the annotated dataset, training YOLOv8 for robust detection (fish near walls, dust, varied postures and sizes), inference demo. | Ultralytics YOLOv8, Roboflow |
-| [`postprocessing/`](postprocessing/) | Offline posture estimation from recorded videos: SLEAP keypoints, midline spline, sub-pixel head registration, trajectory in the lab frame. | SLEAP (U-Net), scikit-image, Numba |
-| [`data_processing/`](data_processing/) | Turns per-run outputs into the analysis-ready `INFO`, `KINE` and `POSE` tables used in the paper. | pandas, h5py, SciPy |
-| [`hardware/`](hardware/) | Set-up schematic and Shapeoko (GRBL) notes. | |
+| [`0_hardware/`](0_hardware/) | Set-up schematic and Shapeoko (GRBL) notes. | |
+| [`1_yolo_detector/`](1_yolo_detector/) | Building the annotated dataset, training YOLOv8 for robust detection (fish near walls, dust, varied postures and sizes), inference demo. | Ultralytics YOLOv8, Roboflow |
+| [`2_acquisition/`](2_acquisition/) | Real-time loop: frame grab → background subtraction → detection → head direction → motor command → stimulus update. Multi-threaded capture, tracking and motor control. | OpenCV, PyTorch/Ultralytics, PySerial (G-code), PsychoPy, FLIR Spinnaker |
+| [`3_pose_estimation/`](3_pose_estimation/) | Offline posture estimation from recorded videos: SLEAP keypoints, midline spline, sub-pixel head registration, trajectory in the lab frame. | SLEAP (U-Net), scikit-image, Numba |
+| [`4_dataset_building/`](4_dataset_building/) | Turns per-run outputs into the analysis-ready `INFO`, `KINE` and `POSE` tables used in the paper. | pandas, h5py, SciPy |
 
 ## Highlights
 
@@ -48,7 +49,7 @@ The analysis of the resulting data is in the repository
 - **Hybrid detection**: fast classical CV (thresholding, ellipse fit) combined with a **custom-trained YOLOv8** detector that stays reliable where classical tracking fails (edges, dust, occlusions).
 - **Smooth closed-loop control**: a spring–dashpot following law moves the camera gantry without jerks or noise that could disturb the fish.
 - **Learned posture**: a SLEAP single-instance U-Net trained on 702 hand-labelled frames gives body keypoints, which are refined with spline fitting and phase-correlation registration.
-- **Reproducible configs**: post-processing parameters live in a documented YAML file (`postprocessing/config_default.yaml`).
+- **Reproducible configs**: post-processing parameters live in a documented YAML file (`3_pose_estimation/config_default.yaml`).
 
 ## System design and performance
 
@@ -74,7 +75,7 @@ The acquisition software runs **five threads in parallel** (Python `threading`),
 | Online tracking (YOLO-based) | 20 ms | ~50 Hz |
 | Motor communication | 56 ms | ~18 Hz (limiting step of the loop) |
 
-**Detection.** Classical background subtraction and thresholding take about 2 ms per frame but confuse dust with the fish and fail along the arena walls. A YOLOv8m model trained on my own labelled frames handles these cases; the two estimates are combined with a confidence weight, and when several objects are detected the one closest to the previous position is kept. See [`yolo/`](yolo/) for training, evaluation and the decision rules.
+**Detection.** Classical background subtraction and thresholding take about 2 ms per frame but confuse dust with the fish and fail along the arena walls. A YOLOv8m model trained on my own labelled frames handles these cases; the two estimates are combined with a confidence weight, and when several objects are detected the one closest to the previous position is kept. See [`1_yolo_detector/`](1_yolo_detector/) for training, evaluation and the decision rules.
 
 **Motor control.** The stage follows the fish as if connected to it by a virtual spring in series with a dashpot. At each motor update the stage moves along the direction of the fish by
 
@@ -85,9 +86,9 @@ where $(\Delta x, \Delta y)$ is the fish offset from the centre of the field of 
 - if the fish leaves the field of view, a **recovery mode** makes larger steps at maximum speed along its last heading;
 - software limits registered at the arena edges keep the stage inside its range (crossing them would trigger a controller ALARM).
 
-The control law is implemented in [`acquisition/utilities/motor_control.py`](acquisition/utilities/motor_control.py) and tested in `tests/test_motor_control.py` (closed-loop simulations: re-centring a still fish and keeping a swimming fish in view).
+The control law is implemented in [`2_acquisition/utilities/motor_control.py`](2_acquisition/utilities/motor_control.py) and tested in `tests/test_motor_control.py` (closed-loop simulations: re-centring a still fish and keeping a swimming fish in view).
 
-**Online tracking performance.** On average a fish is tracked continuously for about **15 minutes**, often more than 30 minutes for 14–28 dpf larvae (82 runs). See [`yolo/README.md`](yolo/README.md#evaluation) for details.
+**Online tracking performance.** On average a fish is tracked continuously for about **15 minutes**, often more than 30 minutes for 14–28 dpf larvae (82 runs). See [`1_yolo_detector/README.md`](1_yolo_detector/README.md#evaluation) for details.
 
 ## Quick start
 
@@ -98,15 +99,15 @@ git clone https://github.com/MonicaCoraggioso/fish-realtime-tracking.git
 cd fish-realtime-tracking
 
 # Train or evaluate the detector (no special hardware needed)
-pip install -r yolo/requirements.txt
-cd yolo && jupyter notebook train_yolov8.ipynb
+pip install -r 1_yolo_detector/requirements.txt
+cd 1_yolo_detector && jupyter notebook train_yolov8.ipynb
 ```
 
 See each folder's README for details. The acquisition code needs the actual hardware (FLIR camera + Spinnaker SDK, Shapeoko CNC, projector).
 
 ## Tests
 
-Unit tests cover the hardware-independent parts: the YOLO dataset and detection rules, the motor-following law (closed-loop simulations), pose and kinematics cleaning (`data_processing/`), the post-processing configuration, and the calibration and watchdog helpers of the acquisition code. Checks on the trained YOLO weights run locally once the weights are downloaded. They run automatically on every push (GitHub Actions) and locally with:
+Unit tests cover the hardware-independent parts: the YOLO dataset and detection rules, the motor-following law (closed-loop simulations), pose and kinematics cleaning (`4_dataset_building/`), the post-processing configuration, and the calibration and watchdog helpers of the acquisition code. Checks on the trained YOLO weights run locally once the weights are downloaded. They run automatically on every push (GitHub Actions) and locally with:
 
 ```bash
 pip install -r requirements-test.txt
@@ -119,7 +120,7 @@ Data are **not** stored in this repository. They are archived on Zenodo, publish
 
 | Item | Where |
 |---|---|
-| YOLOv8 training set (122 annotated 128×128 frames) | included: `yolo/dataset/` |
+| YOLOv8 training set (122 annotated 128×128 frames) | included: `1_yolo_detector/dataset/` |
 | YOLOv8 weights `yolo8m_live_tracking.pt` (52 MB) | [GitHub Releases](https://github.com/MonicaCoraggioso/fish-realtime-tracking/releases) and Zenodo `Tracking_camera.zip` |
 | SLEAP model weights `best_model.h5` | [GitHub Releases](https://github.com/MonicaCoraggioso/fish-realtime-tracking/releases) and Zenodo `Tracking_camera.zip` |
 | Example raw recordings | Zenodo `Tracking_camera.zip` → `data/` |
@@ -135,7 +136,7 @@ If you use this code, please cite the paper and the archive (see [`CITATION.cff`
 
 ## Author and credits
 
-**Monica Coraggioso** ([ORCID](https://orcid.org/0009-0004-2091-3592)), Laboratoire Jean Perrin, Sorbonne Université. Data quality checks and dataset standardization (`data_processing/`) by **Vito Dichio**.
+**Monica Coraggioso** ([ORCID](https://orcid.org/0009-0004-2091-3592)), Laboratoire Jean Perrin, Sorbonne Université. Data quality checks and dataset standardization (`4_dataset_building/`) by **Vito Dichio**.
 
 ## License
 

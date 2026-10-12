@@ -4,7 +4,7 @@ import pytest
 
 from conftest import load_module
 
-mc = load_module("acquisition/utilities/motor_control.py", "acq_motor_control")
+mc = load_module("2_acquisition/utilities/motor_control.py", "acq_motor_control")
 
 DT_MOTOR = 1 / 18          # motor thread runs at ~18 Hz (thesis, Fig. 2.3)
 # (V_MAX [mm/s], ROI radius [mm]) for young and old fish (ROI diameter 20 mm at 2 wpf, 35 mm at 5 wpf)

@@ -1,6 +1,6 @@
 # Data processing: building the analysis-ready datasets
 
-This script takes the per-run output of [`../postprocessing/`](../postprocessing/), i.e. raw tracking data from longitudinal fish behavioral experiments, applying quality filters and consolidating results into unified datasets.
+This script takes the per-run output of [`../3_pose_estimation/`](../3_pose_estimation/), i.e. raw tracking data from longitudinal fish behavioral experiments, applying quality filters and consolidating results into unified datasets.
 
 ## Overview
 
