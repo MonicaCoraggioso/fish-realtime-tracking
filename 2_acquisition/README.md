@@ -73,7 +73,7 @@ pip install rotpy
 
 ### Model Files
 
-- **`yolo8m_live_tracking.pt`**: trained YOLOv8 weights for fish detection. Download them from the repository's GitHub Releases (or Zenodo) and place the file in this folder. Training code is in [`../yolo/`](../yolo/).
+- **`yolo8m_live_tracking.pt`**: trained YOLOv8 weights for fish detection. Download them from the repository's GitHub Releases (or Zenodo) and place the file in this folder. Training code is in [`../1_yolo_detector/`](../1_yolo_detector/).
 
 ### Environment variables
 

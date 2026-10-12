@@ -1,6 +1,6 @@
 # Post-processing: posture and trajectory reconstruction
 
-An offline pipeline that turns recorded experiment videos into analysis-ready posture and trajectory data. It is **self-contained**: it does not import anything from `acquisition/` or `yolo/`.
+An offline pipeline that turns recorded experiment videos into analysis-ready posture and trajectory data. It is **self-contained**: it does not import anything from `2_acquisition/` or `1_yolo_detector/`.
 
 ```
 raw run (.h5 / .npy movie)
@@ -14,7 +14,7 @@ spline fit of the midline + head image registration (phase correlation, rotation
 position (X, Y), heading φ and body shape in the laboratory frame → run{N}_postprocessing.h5
 ```
 
-The output feeds [`../data_processing/`](../data_processing/).
+The output feeds [`../4_dataset_building/`](../4_dataset_building/).
 
 ## Contents
 
@@ -45,7 +45,7 @@ pip install -r requirements.txt
 Start Jupyter from `notebooks/` so that `utilities` can be imported:
 
 ```bash
-cd postprocessing/notebooks
+cd 3_pose_estimation/notebooks
 jupyter notebook
 ```
 

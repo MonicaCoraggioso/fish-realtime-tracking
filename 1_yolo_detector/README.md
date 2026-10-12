@@ -1,6 +1,6 @@
 # YOLOv8 fish detector
 
-A custom **YOLOv8m** model that finds a freely swimming *Danionella* larva in each frame. The real-time tracker in [`../acquisition/`](../acquisition/) combines it with fast classical image analysis: thresholding takes about 2 ms but fails with dust, reflections or a fish swimming along the arena wall, while YOLO stays reliable in those cases.
+A custom **YOLOv8m** model that finds a freely swimming *Danionella* larva in each frame. The real-time tracker in [`../2_acquisition/`](../2_acquisition/) combines it with fast classical image analysis: thresholding takes about 2 ms but fails with dust, reflections or a fish swimming along the arena wall, while YOLO stays reliable in those cases.
 
 Pre-trained models on Roboflow Universe did not handle these conditions, so I built a dedicated dataset and trained a custom model. Full details are in Chapter 2.3 of my PhD thesis ([Coraggioso, 2025](https://theses.hal.science/tel-05569582)).
 
@@ -13,7 +13,7 @@ Pre-trained models on Roboflow Universe did not handle these conditions, so I bu
 
 | File | Purpose |
 |---|---|
-| `create_dataset.ipynb` | Extracts frames from recorded experiments, preprocesses them (binarise, crop to 128×128) and exports them for labelling. Uses `../acquisition/utilities`. |
+| `create_dataset.ipynb` | Extracts frames from recorded experiments, preprocesses them (binarise, crop to 128×128) and exports them for labelling. Uses `../2_acquisition/utilities`. |
 | `train_yolov8.ipynb` | Trains YOLOv8m, then runs inference on single frames and full sequences, with an interactive viewer. |
 | `evaluate.py` | Evaluates the weights on a labelled split: precision, recall, mAP, detection rate, centre error. |
 | `dataset/` | YOLO-format dataset (`data.yaml`, `train/`, `valid/`, `test/`), see below. |
@@ -31,7 +31,7 @@ The **bundled `dataset/`** is a smaller export of the same kind of data (Roboflo
 
 ## How detections are used in real time
 
-The rules below are implemented in [`acquisition/utilities/yolo_postprocessing.py`](../acquisition/utilities/yolo_postprocessing.py) and unit-tested in [`tests/`](../tests/):
+The rules below are implemented in [`2_acquisition/utilities/yolo_postprocessing.py`](../2_acquisition/utilities/yolo_postprocessing.py) and unit-tested in [`tests/`](../tests/):
 
 1. Each camera frame is downscaled by 2 to the 128×128 YOLO input and run on the GPU; boxes are scaled back to camera pixels.
 2. **Several detections** (dust particles, or a partly occluded fish split in two): keep the one closest to the fish position at the previous frame.
@@ -70,7 +70,7 @@ jupyter notebook train_yolov8.ipynb
 
 ## Weights
 
-The trained weights `yolo8m_live_tracking.pt` (52 MB) are attached to this repository's **[GitHub Release](https://github.com/MonicaCoraggioso/fish-realtime-tracking/releases)** and archived on [Zenodo](https://doi.org/10.5281/zenodo.17650136). Put the file in `yolo/` (evaluation and tests) or `acquisition/` (live tracking).
+The trained weights `yolo8m_live_tracking.pt` (52 MB) are attached to this repository's **[GitHub Release](https://github.com/MonicaCoraggioso/fish-realtime-tracking/releases)** and archived on [Zenodo](https://doi.org/10.5281/zenodo.17650136). Put the file in `1_yolo_detector/` (evaluation and tests) or `2_acquisition/` (live tracking).
 
 ## License
 
