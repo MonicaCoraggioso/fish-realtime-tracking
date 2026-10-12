@@ -77,14 +77,11 @@ The acquisition software runs **five threads in parallel** (Python `threading`),
 
 **Detection.** Classical background subtraction and thresholding take about 2 ms per frame but confuse dust with the fish and fail along the arena walls. A YOLOv8m model trained on my own labelled frames handles these cases; the two estimates are combined with a confidence weight, and when several objects are detected the one closest to the previous position is kept. See [`1_yolo_detector/`](1_yolo_detector/) for training, evaluation and the decision rules.
 
-**Motor control.** The stage follows the fish as if connected to it by a virtual spring in series with a dashpot. At each motor update the stage moves along the direction of the fish by
+**Motor control.** The stage follows the fish like a damped spring: at each update it steps toward the fish with speed
 
-$$\Delta x' = \frac{\Delta x}{r} V \, dt_{motor}, \qquad V_{t+1} = -\alpha r + (1-\beta) V_t,$$
+$$V_{t+1} = -\alpha r + (1-\beta) V_t,$$
 
-where $(\Delta x, \Delta y)$ is the fish offset from the centre of the field of view and $r$ its norm. The gain $\alpha = V_{MAX}/R_{MAX}$ depends on fish age ($V_{MAX}$ = 100 mm/s for young larvae up to 300 mm/s for older fish; $R_{MAX}$ is the radius of the field of view). The damping $\beta = 0.8\sqrt{\alpha \, dt_{motor}}$ was calibrated by projecting a dot moving at fish-like speeds and recording how the stage re-centred it, so that the response stays underdamped: rapid yet smooth corrections, without oscillatory instability. Further design choices:
-- the 35-command buffer of the Shapeoko controller is never left empty, so motion stays continuous and quiet (no stop-and-start accelerations);
-- if the fish leaves the field of view, a **recovery mode** makes larger steps at maximum speed along its last heading;
-- software limits registered at the arena edges keep the stage inside its range (crossing them would trigger a controller ALARM).
+where $r$ is the fish's distance from the centre of the field of view. The gain $\alpha$ increases with fish age (faster fish), and the damping $\beta$ was calibrated with a projected moving dot so that corrections are fast but smooth. The motor command buffer is never left empty, which keeps motion continuous and quiet; a recovery mode searches along the last heading if the fish is lost, and software limits keep the stage inside the arena.
 
 The control law is implemented in [`2_acquisition/utilities/motor_control.py`](2_acquisition/utilities/motor_control.py) and tested in `tests/test_motor_control.py` (closed-loop simulations: re-centring a still fish and keeping a swimming fish in view).
 
